@@ -8,7 +8,7 @@
     "start": "node index.js",
     "nodemon": "nodemon index.js"
   },
-  "author": "Stepanchuk Yevgeniy - Art-Soft.dp.ua",
+  "author": "Stepanchuk Yevgeniy",
   "license": "ISC",
   "dependencies": {
     "node-telegram-bot-api": "^0.30.0",

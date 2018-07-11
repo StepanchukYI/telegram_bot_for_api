@@ -1,7 +1,8 @@
+var config = require('./config.json');
+
 const TelegramBot = require('node-telegram-bot-api'),
     request = require('request'),
-    token = '599514010:AAEYJ-G39yiJ8tyh117lAReeQ0b1UtK9Rd8',
-    bot = new TelegramBot(token, {polling: true});
+    bot = new TelegramBot(config.token, {polling: true});
 
 // Listen for any kind of message. There are different kinds of
 // messages.
@@ -100,9 +101,9 @@ bot.on('callback_query', function onCallbackQuery(callbackQuery) {
     }
 });
 
-function sendProductOffset(category, msg, offset) {
-    var offset = parseInt(offset);
-    request.post('http://api.beangel.ua/product/list', {json: {category_id: category[0], limit: 4, offset: offset}},
+function sendProductOffset(category, msg, off) {
+    let offset = parseInt(off);
+    request.post(config.host + 'product/list', {json: {category_id: category[0], limit: 4, offset: offset}},
         (error, response, body) => {
             if (!error && response.statusCode == 200) {
                 if (body.products.length > 0) {
@@ -141,7 +142,7 @@ function sendProductOffset(category, msg, offset) {
                         .then((answer) => {
                             users[msg.chat.id].messages.push(answer.message_id);
                             bot.sendMediaGroup(msg.chat.id, mediaArray[0])
-                                .then((answer)=> {
+                                .then((answer) => {
                                     for (let k in answer) {
                                         users[msg.chat.id].messages.push(answer[k].message_id);
                                     }
@@ -157,7 +158,7 @@ function sendProductOffset(category, msg, offset) {
                                             .then((answer) => {
                                                 users[msg.chat.id].messages.push(answer.message_id);
                                                 bot.sendMediaGroup(msg.chat.id, mediaArray[1])
-                                                    .then((answer)=> {
+                                                    .then((answer) => {
                                                         for (let k in answer) {
                                                             users[msg.chat.id].messages.push(answer[k].message_id);
                                                         }
@@ -179,7 +180,7 @@ function sendProductOffset(category, msg, offset) {
                                                                 ]
                                                             })
                                                         };
-                                                        bot.sendMessage(msg.chat.id, 'Следующая страница', pagination).then((answer)=> {
+                                                        bot.sendMessage(msg.chat.id, 'Следующая страница', pagination).then((answer) => {
                                                             users[msg.chat.id].messages.push(answer.message_id);
                                                         });
                                                     });
@@ -204,7 +205,7 @@ function sendProductOffset(category, msg, offset) {
                                                 ]
                                             })
                                         };
-                                        bot.sendMessage(msg.chat.id, 'Следующая страница', pagination).then((answer)=> {
+                                        bot.sendMessage(msg.chat.id, 'Следующая страница', pagination).then((answer) => {
                                             users[msg.chat.id].messages.push(answer.message_id);
                                         });
                                     }
@@ -215,9 +216,10 @@ function sendProductOffset(category, msg, offset) {
             }
         });
 }
+
 function sendSingleProduct(product_id, msg) {
     var flag = false;
-    request.get('http://api.beangel.ua/product/get/?product_id=' + product_id,
+    request.get(config.host + 'product/get/?product_id=' + product_id,
         (error, response, body) => {
             if (!error && response.statusCode == 200) {
                 if (JSON.parse(body).products.length > 0) {
@@ -256,9 +258,9 @@ function sendSingleProduct(product_id, msg) {
                         )
                     }
                     bot.sendMessage(msg.chat.id, product.product_name + "\n" + product.full_description, catOption1)
-                        .then((answer)=> {
+                        .then((answer) => {
                             users[msg.chat.id].messages.push(answer.message_id);
-                            bot.sendMediaGroup(msg.chat.id, images).then((answer)=> {
+                            bot.sendMediaGroup(msg.chat.id, images).then((answer) => {
                                 for (let i in answer) {
                                     users[msg.chat.id].messages.push(answer[i].message_id);
                                 }
@@ -268,6 +270,7 @@ function sendSingleProduct(product_id, msg) {
             }
         });
 }
+
 function addProductToCart(product_id, msg, action) {
     flag = false;
     if (!users[msg.chat.id].products || users[msg.chat.id].products.length == 0) {
@@ -352,7 +355,7 @@ function viewCart(msg) {
         var dataArray = [];
         var btnArray = [];
         for (let i = 0; i < users[msg.chat.id].products.length; i++) {
-            request.get('http://api.beangel.ua/product/get/?product_id=' + users[msg.chat.id].products[i].product_id,
+            request.get(config.host + 'product/get/?product_id=' + users[msg.chat.id].products[i].product_id,
                 (error, response, body) => {
                     if (!error && response.statusCode == 200) {
                         if (JSON.parse(body).products.length > 0) {
@@ -397,6 +400,7 @@ function viewCart(msg) {
     }
 
 }
+
 function orderCheckout(msg) {
     if (!users[msg.chat.id].user_phone && users[msg.chat.id].products && users[msg.chat.id].products.length > 0) {
         var option = {
@@ -454,7 +458,7 @@ function orderCheckout(msg) {
                         ]
                     }
                 };
-                bot.sendMessage(msg.chat.id, 'Спасибо, ' + msg.contact.first_name + ' , за твой телефон ' + msg.contact.phone_number + '! Провожу оформление заказа))', option).then(()=> {
+                bot.sendMessage(msg.chat.id, 'Спасибо, ' + msg.contact.first_name + ' , за твой телефон ' + msg.contact.phone_number + '! Провожу оформление заказа))', option).then(() => {
                     checkout(msg);
                 });
             });
@@ -467,7 +471,7 @@ function orderCheckout(msg) {
 }
 
 function checkout(msg) {
-    request.post('http://api.beangel.ua/order', {
+    request.post(config.host + 'order', {
             json: {
                 name: users[msg.chat.id].user_name,
                 surename: users[msg.chat.id].user_last_name,
@@ -493,6 +497,7 @@ function removeMessage(msg) {
         users[msg.chat.id].messages = [];
     }
 }
+
 function getUser(user) {
     if (!users[user.id]) {
         user = users[user.id] = {
@@ -513,7 +518,7 @@ function sendSubCategory(category, msg) {
         sendCategory(msg);
     }
     else {
-        request.get('http://api.beangel.ua/product/category/?category_id=' + category[0],
+        request.get(config.host + 'product/category/?category_id=' + category[0],
             (error, response, body) => {
                 if (!error && response.statusCode == 200) {
                     categories = JSON.parse(body).categories;
@@ -542,7 +547,7 @@ function sendSubCategory(category, msg) {
                             inline_keyboard: categoryArray
                         })
                     };
-                    bot.sendMessage(msg.chat.id, 'Категория ' + category[1] + ' :', catOption).then((answer)=> {
+                    bot.sendMessage(msg.chat.id, 'Категория ' + category[1] + ' :', catOption).then((answer) => {
                         bot.deleteMessage(msg.chat.id, users[msg.chat.id].main_cat_message_id);
                         users[msg.chat.id].main_cat_message_id = answer.message_id;
                     });
@@ -550,6 +555,7 @@ function sendSubCategory(category, msg) {
             });
     }
 }
+
 function sendCategory(msg) {
 
     var keyboard = [
@@ -578,7 +584,7 @@ function sendCategory(msg) {
             inline_keyboard: keyboard
         })
     };
-    bot.sendMessage(msg.chat.id, 'Выбирай категорию!', catOption).then((answer)=> {
+    bot.sendMessage(msg.chat.id, 'Выбирай категорию!', catOption).then((answer) => {
         bot.deleteMessage(msg.chat.id, users[msg.chat.id].main_cat_message_id);
         users[msg.chat.id].main_cat_message_id = answer.message_id;
     });
@@ -623,11 +629,12 @@ function mainMenu(msg) {
             ]
         }
     };
-    bot.sendMessage(msg.chat.id, 'Добро пожаловать к нам в чатик, ' + msg.from.first_name + '. Выбирай категорию и давай продолжим!)', option).then((answer)=> {
+    bot.sendMessage(msg.chat.id, 'Добро пожаловать к нам в чатик, ' + msg.from.first_name + '. Выбирай категорию и давай продолжим!)', option).then((answer) => {
         users[msg.chat.id].messages.push(answer.message_id);
     });
 
 }
+
 function getPromo(msg) {
     var option = {
         parse_mode: "Markdown",

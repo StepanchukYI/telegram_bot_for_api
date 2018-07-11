@@ -1,12 +1,4 @@
 # Created by .ignore support plugin (hsz.mobi)
 
-.idea/vsc.xml
-.idea/deployment.xml
-.idea/inspectionProfiles/
-.idea/misc.xml
-.idea/modules.xml
-.idea/telegabot.iml
-.idea/watcherTasks.xml
-.idea/workspace.xml
-
+.idea/
 node_modules/
