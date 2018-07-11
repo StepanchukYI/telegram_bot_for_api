@@ -1,4 +1,4 @@
-var config = require('./config.json');
+var config = require('./config');
 
 const TelegramBot = require('node-telegram-bot-api'),
     request = require('request'),
